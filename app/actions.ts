@@ -190,10 +190,25 @@ export async function deletePlan(id: string) {
 }
 
 // ---------- Notifications (bell on website 1 + phone push) ----------
-export async function sendNotification(title: string, body: string) {
+export async function sendNotification(
+  title: string,
+  body: string,
+): Promise<{
+  ok: boolean;
+  error?: string;
+  sent?: number;
+  failed?: number;
+  skipped?: boolean;
+}> {
   await assertOwner();
-  if (!title.trim() || !body.trim()) return { ok: false, error: 'Enter title and message.' };
-  await db().from('notifications').insert({ title: title.trim().slice(0, 100), body: body.trim().slice(0, 500) });
+  if (!title.trim() || !body.trim())
+    return { ok: false, error: "Enter title and message." };
+  await db()
+    .from("notifications")
+    .insert({
+      title: title.trim().slice(0, 100),
+      body: body.trim().slice(0, 500),
+    });
   const r = await pushToAll(title.trim(), body.trim());
   return { ok: true, ...r };
 }
