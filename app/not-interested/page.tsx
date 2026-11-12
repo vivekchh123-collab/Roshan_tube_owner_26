@@ -71,7 +71,6 @@ export default async function NotInterested({
                   href={`tel:+91${r.mobile}`}
                   aria-label={`Call ${r.name}`}
                   className="rounded-full bg-green-600 p-3 text-white"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <PhoneIcon width={20} height={20} />
                 </a>
