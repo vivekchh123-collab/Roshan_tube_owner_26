@@ -5,6 +5,7 @@ import AddCustomer from "@/components/AddCustomer";
 import CustomerList from "@/components/CustomerList";
 import SearchBar from "@/components/SearchBar";
 import T from "@/components/T";
+import MarkSeen from "@/components/MarkSeen";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function Home({
 
   return (
     <>
+      <MarkSeen k="pending" />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
           <T en="Customer pending work" hi="ग्राहक का पेंडिंग काम" />

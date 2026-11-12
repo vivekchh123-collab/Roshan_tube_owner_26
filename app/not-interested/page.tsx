@@ -4,6 +4,8 @@ import { cleanQuery, orFilter } from "@/lib/search";
 import { PhoneIcon } from "@/components/Icons";
 import SearchBar from "@/components/SearchBar";
 import T from "@/components/T";
+import MarkSeen from "@/components/MarkSeen";
+import DeleteCustomerButton from "@/components/DeleteCustomerButton";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +36,7 @@ export default async function NotInterested({
       : "—";
   return (
     <>
+      <MarkSeen k="not_interested" />
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
           <T en="Customer not interested" hi="अनिच्छुक ग्राहक" />
@@ -93,6 +96,9 @@ export default async function NotInterested({
                     <T en="Contacted by" hi="संपर्क किया" /> {r.employee_name}
                   </p>
                 )}
+                <div className="pt-2">
+                  <DeleteCustomerButton id={r.id} name={r.name} />
+                </div>
               </div>
             </details>
           </li>

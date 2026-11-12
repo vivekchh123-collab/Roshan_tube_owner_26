@@ -4,6 +4,7 @@ import { cleanQuery, orFilter } from "@/lib/search";
 import CustomerList from "@/components/CustomerList";
 import SearchBar from "@/components/SearchBar";
 import T from "@/components/T";
+import MarkSeen from "@/components/MarkSeen";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export default async function Completed({
 
   return (
     <>
+      <MarkSeen k="completed" />
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
           <T en="Customer completed work" hi="ग्राहक का पूरा काम" />
