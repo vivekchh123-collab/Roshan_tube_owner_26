@@ -1,6 +1,7 @@
 import { requireOwner } from "@/lib/auth";
 import { db } from "@/lib/supabase";
-import { cleanQuery, orFilter } from "@/lib/search";
+import { cleanQuery, cleanSort, orFilter } from "@/lib/search";
+import SortFilter from "@/components/SortFilter";
 import AddCustomer from "@/components/AddCustomer";
 import CustomerList from "@/components/CustomerList";
 import SearchBar from "@/components/SearchBar";
@@ -12,16 +13,18 @@ export const dynamic = "force-dynamic";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string }>;
 }) {
   await requireOwner();
-  const q = cleanQuery((await searchParams).q);
+  const sp = await searchParams;
+  const q = cleanQuery(sp.q);
+  const sort = cleanSort(sp.sort, ["new", "old"], "new");
 
   let query = db()
     .from("customers")
     .select("id,name,mobile,checklist,products")
     .eq("status", "pending")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: sort === "old" });
   if (q) query = query.or(orFilter(q));
   const { data } = await query;
 
@@ -36,6 +39,9 @@ export default async function Home({
           <AddCustomer />
           <SearchBar q={q} />
         </div>
+      </div>
+      <div className="mt-3">
+        <SortFilter sort={sort} options={["new", "old"]} />
       </div>
       <div className="mt-4">
         <CustomerList

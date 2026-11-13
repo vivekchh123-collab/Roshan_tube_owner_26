@@ -14,3 +14,14 @@ export function cleanQuery(v: string | string[] | undefined): string {
 export function orFilter(q: string, nameColumn = "name"): string {
   return `${nameColumn}.ilike.%${q}%,mobile.ilike.%${q}%`;
 }
+
+export type Sort = "new" | "old" | "callback";
+/** Reads ?sort=... safely. Anything unknown falls back to the default. */
+export function cleanSort(
+  v: string | string[] | undefined,
+  allowed: Sort[],
+  fallback: Sort,
+): Sort {
+  const s = (Array.isArray(v) ? v[0] : v) as Sort | undefined;
+  return s && allowed.includes(s) ? s : fallback;
+}

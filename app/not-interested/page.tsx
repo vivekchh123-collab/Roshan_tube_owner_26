@@ -1,7 +1,8 @@
 import { requireOwner } from "@/lib/auth";
 import { db } from "@/lib/supabase";
-import { cleanQuery, orFilter } from "@/lib/search";
+import { cleanQuery, cleanSort, orFilter } from "@/lib/search";
 import { PhoneIcon } from "@/components/Icons";
+import SortFilter from "@/components/SortFilter";
 import SearchBar from "@/components/SearchBar";
 import T from "@/components/T";
 import MarkSeen from "@/components/MarkSeen";
@@ -12,16 +13,20 @@ export const dynamic = "force-dynamic";
 export default async function NotInterested({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string }>;
 }) {
   await requireOwner();
-  const q = cleanQuery((await searchParams).q);
+  const sp = await searchParams;
+  const q = cleanQuery(sp.q);
+  const sort = cleanSort(sp.sort, ["new", "old", "callback"], "new");
 
   let query = db()
     .from("customers")
     .select("id,name,mobile,reason,callback_at,employee_name,created_at")
     .eq("status", "not_interested")
-    .order("callback_at", { ascending: true });
+    .order(sort === "callback" ? "callback_at" : "created_at", {
+      ascending: sort === "callback" || sort === "old",
+    });
   if (q) query = query.or(orFilter(q));
   const { data } = await query;
 
@@ -42,6 +47,9 @@ export default async function NotInterested({
           <T en="Customer not interested" hi="अनिच्छुक ग्राहक" />
         </h1>
         <SearchBar q={q} />
+      </div>
+      <div className="mb-3">
+        <SortFilter sort={sort} options={["new", "old", "callback"]} />
       </div>
       <p className="mb-4 text-sm text-slate-500">
         <T

@@ -1,6 +1,7 @@
 import { requireOwner } from "@/lib/auth";
 import { db } from "@/lib/supabase";
-import { cleanQuery, orFilter } from "@/lib/search";
+import { cleanQuery, cleanSort, orFilter } from "@/lib/search";
+import SortFilter from "@/components/SortFilter";
 import CustomerList from "@/components/CustomerList";
 import SearchBar from "@/components/SearchBar";
 import T from "@/components/T";
@@ -11,16 +12,18 @@ export const dynamic = "force-dynamic";
 export default async function Completed({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string }>;
 }) {
   await requireOwner();
-  const q = cleanQuery((await searchParams).q);
+  const sp = await searchParams;
+  const q = cleanQuery(sp.q);
+  const sort = cleanSort(sp.sort, ["new", "old"], "new");
 
   let query = db()
     .from("customers")
     .select("id,name,mobile,checklist,products")
     .eq("status", "completed")
-    .order("completed_at", { ascending: false });
+    .order("completed_at", { ascending: sort === "old" });
   if (q) query = query.or(orFilter(q));
   const { data } = await query;
 
@@ -39,6 +42,9 @@ export default async function Completed({
           hi="ग्राहक के अंदर कोई आइटम अनटिक करने पर वे अपने-आप पेंडिंग में लौट जाते हैं।"
         />
       </p>
+      <div className="mb-4">
+        <SortFilter sort={sort} options={["new", "old"]} />
+      </div>
       <CustomerList
         rows={(data ?? []) as never}
         empty={

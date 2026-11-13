@@ -1,13 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useApp } from "./Providers";
 
 // Search icon (top right). Tap it to open the box; type a name or number; the list filters automatically.
+// It keeps the chosen sort (?sort=...) when the search text changes.
 export default function SearchBar({ q }: { q: string }) {
   const { tx } = useApp();
   const router = useRouter();
   const path = usePathname();
+  const params = useSearchParams();
   const [open, setOpen] = useState(q !== "");
   const [val, setVal] = useState(q);
   const ref = useRef<HTMLInputElement>(null);
@@ -21,12 +23,14 @@ export default function SearchBar({ q }: { q: string }) {
     const v = val.trim();
     if (v === q) return;
     const t = setTimeout(() => {
-      router.replace(v ? `${path}?q=${encodeURIComponent(v)}` : path, {
-        scroll: false,
-      });
+      const sp = new URLSearchParams(params.toString());
+      if (v) sp.set("q", v);
+      else sp.delete("q");
+      const qs = sp.toString();
+      router.replace(qs ? `${path}?${qs}` : path, { scroll: false });
     }, 350);
     return () => clearTimeout(t);
-  }, [val, q, path, router]);
+  }, [val, q, path, router, params]);
 
   function close() {
     setVal("");
