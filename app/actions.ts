@@ -70,6 +70,37 @@ export async function deleteCustomer(id: string) {
   revalidatePath("/not-interested");
 }
 
+/** Owner adds a "not interested" customer by hand (name, mobile, reason, when to call again). */
+export async function addNotInterested(name: string, mobile: string, reason: string, callbackIso: string) {
+  await assertOwner();
+  const m = digits(mobile);
+  const cb = new Date(callbackIso);
+  if (!name.trim() || m.length !== 10) return { ok: false, error: 'Enter a name and a 10-digit mobile number.' };
+  if (!reason.trim() || isNaN(+cb)) return { ok: false, error: 'Enter the reason and the call-back date/time.' };
+  const { error } = await db().from('customers').insert({
+    name: name.trim().slice(0, 100), mobile: m, status: 'not_interested',
+    reason: reason.trim().slice(0, 500), callback_at: cb.toISOString(),
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/not-interested');
+  return { ok: true };
+}
+
+/** Edit the details of a "not interested" customer. */
+export async function updateNotInterested(id: string, name: string, mobile: string, reason: string, callbackIso: string) {
+  await assertOwner();
+  const m = digits(mobile);
+  const cb = new Date(callbackIso);
+  if (!name.trim() || m.length !== 10) return { ok: false, error: 'Enter a name and a 10-digit mobile number.' };
+  if (!reason.trim() || isNaN(+cb)) return { ok: false, error: 'Enter the reason and the call-back date/time.' };
+  const { error } = await db().from('customers')
+    .update({ name: name.trim().slice(0, 100), mobile: m, reason: reason.trim().slice(0, 500), callback_at: cb.toISOString() })
+    .eq('id', id).eq('status', 'not_interested');
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/not-interested');
+  return { ok: true };
+}
+
 // ---------- Red-dot "seen" markers ----------
 export async function markSeen(
   key: "pending" | "not_interested" | "completed" | "employees",
