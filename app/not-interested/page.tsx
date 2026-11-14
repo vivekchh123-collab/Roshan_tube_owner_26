@@ -7,6 +7,10 @@ import SearchBar from "@/components/SearchBar";
 import T from "@/components/T";
 import MarkSeen from "@/components/MarkSeen";
 import DeleteCustomerButton from "@/components/DeleteCustomerButton";
+import {
+  AddNotInterested,
+  EditNotInterested,
+} from "@/components/NotInterestedParts";
 
 export const dynamic = "force-dynamic";
 
@@ -42,13 +46,16 @@ export default async function NotInterested({
   return (
     <>
       <MarkSeen k="not_interested" />
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
           <T en="Customer not interested" hi="अनिच्छुक ग्राहक" />
         </h1>
-        <SearchBar q={q} />
+        <div className="flex items-center gap-2">
+          <AddNotInterested />
+          <SearchBar q={q} />
+        </div>
       </div>
-      <div className="mb-3">
+      <div className="mb-3 mt-3">
         <SortFilter sort={sort} options={["new", "old", "callback"]} />
       </div>
       <p className="mb-4 text-sm text-slate-500">
@@ -104,7 +111,16 @@ export default async function NotInterested({
                     <T en="Contacted by" hi="संपर्क किया" /> {r.employee_name}
                   </p>
                 )}
-                <div className="pt-2">
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  <EditNotInterested
+                    c={{
+                      id: r.id,
+                      name: r.name,
+                      mobile: r.mobile,
+                      reason: r.reason,
+                      callback_at: r.callback_at,
+                    }}
+                  />
                   <DeleteCustomerButton id={r.id} name={r.name} />
                 </div>
               </div>
