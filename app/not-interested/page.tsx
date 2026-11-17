@@ -1,126 +1,65 @@
-import { requireOwner } from "@/lib/auth";
-import { db } from "@/lib/supabase";
-import { cleanQuery, cleanSort, orFilter } from "@/lib/search";
-import { PhoneIcon } from "@/components/Icons";
-import SortFilter from "@/components/SortFilter";
-import SearchBar from "@/components/SearchBar";
-import T from "@/components/T";
-import MarkSeen from "@/components/MarkSeen";
-import DeleteCustomerButton from "@/components/DeleteCustomerButton";
-import {
-  AddNotInterested,
-  EditNotInterested,
-} from "@/components/NotInterestedParts";
+import { requireOwner } from '@/lib/auth';
+import { db } from '@/lib/supabase';
+import { cleanQuery, cleanSort, orFilter } from '@/lib/search';
+import SortFilter from '@/components/SortFilter';
+import { PhoneIcon } from '@/components/Icons';
+import SearchBar from '@/components/SearchBar';
+import T from '@/components/T';
+import MarkSeen from '@/components/MarkSeen';
+import DeleteCustomerButton from '@/components/DeleteCustomerButton';
+import { AddNotInterested, EditNotInterested } from '@/components/NotInterestedParts';
+import MoveMenu from '@/components/MoveMenu';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-export default async function NotInterested({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; sort?: string }>;
-}) {
+export default async function NotInterested({ searchParams }: { searchParams: Promise<{ q?: string; sort?: string }> }) {
   await requireOwner();
   const sp = await searchParams;
   const q = cleanQuery(sp.q);
-  const sort = cleanSort(sp.sort, ["new", "old", "callback"], "new");
+  const sort = cleanSort(sp.sort, ['new', 'old', 'callback'], 'new');
 
   let query = db()
-    .from("customers")
-    .select("id,name,mobile,reason,callback_at,employee_name,created_at")
-    .eq("status", "not_interested")
-    .order(sort === "callback" ? "callback_at" : "created_at", {
-      ascending: sort === "callback" || sort === "old",
-    });
+    .from('customers')
+    .select('id,name,mobile,reason,callback_at,employee_name,created_at')
+    .eq('status', 'not_interested')
+    .order(sort === 'callback' ? 'callback_at' : 'created_at', { ascending: sort === 'callback' || sort === 'old' });
   if (q) query = query.or(orFilter(q));
   const { data } = await query;
 
   const rows = data ?? [];
-  const fmt = (s: string | null) =>
-    s
-      ? new Date(s).toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata",
-          dateStyle: "medium",
-          timeStyle: "short",
-        })
-      : "—";
+  const fmt = (s: string | null) => (s ? new Date(s).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) : '—');
   return (
     <>
       <MarkSeen k="not_interested" />
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
-          <T en="Customer not interested" hi="अनिच्छुक ग्राहक" />
-        </h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white"><T en="Customer not interested" hi="अनिच्छुक ग्राहक" /></h1>
         <div className="flex items-center gap-2">
           <AddNotInterested />
           <SearchBar q={q} />
         </div>
       </div>
-      <div className="mb-3 mt-3">
-        <SortFilter sort={sort} options={["new", "old", "callback"]} />
-      </div>
-      <p className="mb-4 text-sm text-slate-500">
-        <T
-          en="Tap a customer to see the reason and when to call again."
-          hi="कारण और दोबारा कॉल का समय देखने के लिए ग्राहक पर टैप करें।"
-        />
-      </p>
+      <div className="mb-3"><SortFilter sort={sort} options={['new', 'old', 'callback']} /></div>
+      <p className="mb-4 text-sm text-slate-500"><T en="Tap a customer to see the reason and when to call again." hi="कारण और दोबारा कॉल का समय देखने के लिए ग्राहक पर टैप करें।" /></p>
       {rows.length === 0 && (
         <p className="py-10 text-center text-slate-500">
-          {q ? (
-            <T
-              en="No customer found for this search."
-              hi="इस खोज के लिए कोई ग्राहक नहीं मिला।"
-            />
-          ) : (
-            <T en="No customers here." hi="यहाँ कोई ग्राहक नहीं है।" />
-          )}
+          {q ? <T en="No customer found for this search." hi="इस खोज के लिए कोई ग्राहक नहीं मिला।" /> : <T en="No customers here." hi="यहाँ कोई ग्राहक नहीं है।" />}
         </p>
       )}
       <ul className="space-y-2">
         {rows.map((r) => (
-          <li key={r.id} className="card !p-0">
+          <li key={r.id} className="card relative !p-0">
+            <div className="absolute right-[4.25rem] top-4 z-10"><MoveMenu id={r.id} name={r.name} from="not_interested" /></div>
             <details>
               <summary className="flex cursor-pointer list-none items-center gap-3 p-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold">{r.name}</p>
-                  <p className="text-sm text-slate-500">{r.mobile}</p>
-                </div>
-                <a
-                  href={`tel:+91${r.mobile}`}
-                  aria-label={`Call ${r.name}`}
-                  className="rounded-full bg-green-600 p-3 text-white"
-                >
-                  <PhoneIcon width={20} height={20} />
-                </a>
+                <div className="min-w-0 flex-1 pr-12"><p className="truncate font-bold">{r.name}</p><p className="text-sm text-slate-500">{r.mobile}</p></div>
+                <a href={`tel:+91${r.mobile}`} aria-label={`Call ${r.name}`} className="rounded-full bg-green-600 p-3 text-white"><PhoneIcon width={20} height={20} /></a>
               </summary>
               <div className="space-y-1 border-t border-slate-200 p-3 text-sm dark:border-slate-800">
-                <p>
-                  <b>
-                    <T en="Reason:" hi="कारण:" />
-                  </b>{" "}
-                  {r.reason || "—"}
-                </p>
-                <p>
-                  <b>
-                    <T en="Call again on:" hi="दोबारा कॉल का समय:" />
-                  </b>{" "}
-                  {fmt(r.callback_at)}
-                </p>
-                {r.employee_name && (
-                  <p className="text-slate-500">
-                    <T en="Contacted by" hi="संपर्क किया" /> {r.employee_name}
-                  </p>
-                )}
+                <p><b><T en="Reason:" hi="कारण:" /></b> {r.reason || '—'}</p>
+                <p><b><T en="Call again on:" hi="दोबारा कॉल का समय:" /></b> {fmt(r.callback_at)}</p>
+                {r.employee_name && <p className="text-slate-500"><T en="Contacted by" hi="संपर्क किया" /> {r.employee_name}</p>}
                 <div className="flex flex-wrap items-center gap-2 pt-2">
-                  <EditNotInterested
-                    c={{
-                      id: r.id,
-                      name: r.name,
-                      mobile: r.mobile,
-                      reason: r.reason,
-                      callback_at: r.callback_at,
-                    }}
-                  />
+                  <EditNotInterested c={{ id: r.id, name: r.name, mobile: r.mobile, reason: r.reason, callback_at: r.callback_at }} />
                   <DeleteCustomerButton id={r.id} name={r.name} />
                 </div>
               </div>

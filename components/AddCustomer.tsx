@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { addCustomer } from '@/app/actions';
 import { useApp } from './Providers';
 
-export default function AddCustomer() {
+export default function AddCustomer({ status = 'pending' }: { status?: 'pending' | 'interested' }) {
   const { tx } = useApp();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -15,7 +15,7 @@ export default function AddCustomer() {
 
   async function save() {
     setBusy(true); setErr('');
-    const r = await addCustomer(name, mobile);
+    const r = await addCustomer(name, mobile, status);
     setBusy(false);
     if (!r.ok) { setErr(r.error || 'Failed'); return; }
     setOpen(false); setName(''); setMobile('');
@@ -24,7 +24,7 @@ export default function AddCustomer() {
 
   return (
     <>
-      <button className="btn" onClick={() => setOpen(true)}>＋ {tx('Add customer detail', 'ग्राहक विवरण जोड़ें')}</button>
+      <button className="btn" onClick={() => setOpen(true)}>＋ {status === 'interested' ? tx('Add interested customer', 'इच्छुक ग्राहक जोड़ें') : tx('Add customer detail', 'ग्राहक विवरण जोड़ें')}</button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-3 sm:items-center">
           <div className="card w-full max-w-md space-y-3">
