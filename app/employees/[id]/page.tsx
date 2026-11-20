@@ -33,7 +33,12 @@ export default async function EmployeeActivity({ params }: { params: Promise<{ i
   const sWeek = split(rows.filter((r) => inDays(r, days)));
   const sAll = split(rows);
   const doneN = rows.filter((r) => r.status === 'completed').length;
-  const label: Record<string, [string, string]> = { pending: ['Interested (work started)', 'इच्छुक (काम शुरू)'], interested: ['Interested', 'इच्छुक'], completed: ['Completed', 'पूरा'], not_interested: ['Not interested', 'अनिच्छुक'] };
+  const label: Record<string, [string, string]> = {
+    pending: ["Interested (work started)", "इच्छुक (काम शुरू)"],
+    interested: ["Interested", "इच्छुक"],
+    completed: ["Completed", "पूरा"],
+    not_interested: ["Not interested", "अनिच्छुक"],
+  };
 
   return (
     <>
